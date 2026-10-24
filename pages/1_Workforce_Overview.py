@@ -44,8 +44,28 @@ except Exception as e:
 
 # --- FILTERS ---
 st.sidebar.header("Filters")
+
+# Department Filter
 selected_dept = st.sidebar.multiselect("Select Department", options=df['department_name'].unique(), default=df['department_name'].unique())
-filtered_df = df[df['department_name'].isin(selected_dept)]
+
+# Date Filter
+min_date = df['date'].min().date()
+max_date = df['date'].max().date()
+# Ensure default is a valid range (start and end)
+selected_dates = st.sidebar.date_input("Select Date Range", [min_date, max_date], min_value=min_date, max_value=max_date)
+
+# Safety check in case the user hasn't selected both start and end dates yet
+if len(selected_dates) == 2:
+    start_date, end_date = selected_dates
+else:
+    start_date, end_date = min_date, max_date
+
+# Apply both filters to the dataframe
+filtered_df = df[
+    (df['department_name'].isin(selected_dept)) & 
+    (df['date'].dt.date >= start_date) & 
+    (df['date'].dt.date <= end_date)
+]
 
 if filtered_df.empty:
     st.warning("No data available for the selected filters.")
