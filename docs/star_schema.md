@@ -1,3 +1,4 @@
+```mermaid
 erDiagram
     %% Dimensions
     dim_employee {
@@ -38,3 +39,4 @@ erDiagram
     dim_date ||--o{ fact_payroll : "Filters by date_key"
     
     dim_team ||--o{ fact_task : "Filters by team_id"
+```
