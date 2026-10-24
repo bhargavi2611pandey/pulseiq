@@ -13,7 +13,7 @@ def load_data():
     # Connect and build a secure dashboard view on top of the metric layer
     con = duckdb.connect("pulseiq.duckdb") 
     
-    # Create an app-specific view that joins the governed headcount metric with dimension names
+    # Create an app-specific view that joins the governed metrics with dimension names
     con.execute("""
         CREATE OR REPLACE VIEW metrics.vw_app_workforce AS 
         SELECT 
@@ -21,10 +21,12 @@ def load_data():
             d.department_name,
             h.date_key,
             h.headcount,
+            p.avg_net_pay,  -- NEW METRIC ADDED HERE
             'Remote' as work_mode,  -- Simulated from dim_employee for dashboard
             'Tier 1' as location_tier -- Simulated from dim_location for dashboard
         FROM metrics.vw_headcount h
         LEFT JOIN warehouse.dim_department d ON h.department_id = d.department_id
+        LEFT JOIN metrics.vw_avg_net_pay p ON h.department_id = p.department_id AND h.date_key = p.date_key
     """)
     
     df = con.execute("SELECT * FROM metrics.vw_app_workforce").df()
@@ -39,7 +41,7 @@ st.title("Workforce & Headcount")
 try:
     df = load_data()
 except Exception as e:
-    st.error(f"Error loading data: {e}. Ensure you are running this from the main folder.")
+    st.error(f"Error loading data: {e}. Ensure you are running this from the main folder and have run the mini_challenge.py script.")
     st.stop()
 
 # --- FILTERS ---
@@ -51,16 +53,13 @@ selected_dept = st.sidebar.multiselect("Select Department", options=df['departme
 # Date Filter
 min_date = df['date'].min().date()
 max_date = df['date'].max().date()
-# Ensure default is a valid range (start and end)
 selected_dates = st.sidebar.date_input("Select Date Range", [min_date, max_date], min_value=min_date, max_value=max_date)
 
-# Safety check in case the user hasn't selected both start and end dates yet
 if len(selected_dates) == 2:
     start_date, end_date = selected_dates
 else:
     start_date, end_date = min_date, max_date
 
-# Apply both filters to the dataframe
 filtered_df = df[
     (df['department_name'].isin(selected_dept)) & 
     (df['date'].dt.date >= start_date) & 
@@ -76,10 +75,20 @@ latest_date = filtered_df['date'].max()
 latest_data = filtered_df[filtered_df['date'] == latest_date]
 total_headcount = latest_data['headcount'].sum()
 
-col1, col2, col3 = st.columns(3)
+# Calculate overall average pay for the selected filters
+avg_pay = latest_data['avg_net_pay'].mean() 
+
+col1, col2, col3, col4 = st.columns(4)
 col1.metric("Current Headcount", f"{total_headcount:,}")
 col2.metric("Active Departments", len(latest_data['department_name'].unique()))
-col3.metric("Data As Of", latest_date.strftime('%B %Y'))
+
+# Handle potential empty data gracefully
+if pd.isna(avg_pay):
+    col3.metric("Avg Dept Net Pay", "N/A")
+else:
+    col3.metric("Avg Dept Net Pay", f"₹{avg_pay:,.0f}")
+    
+col4.metric("Data As Of", latest_date.strftime('%B %Y'))
 
 st.markdown("---")
 
@@ -104,6 +113,5 @@ with col_left:
 # 3. Location & Work Mode Mix
 with col_right:
     st.subheader("Workforce is heavily distributed in Tier 1 remote roles")
-    # Using our standard 3 colors for pie charts to maintain discipline
     fig_mode = px.pie(latest_data, names='location_tier', values='headcount', hole=0.4, color_discrete_sequence=COLORS)
     st.plotly_chart(fig_mode, use_container_width=True)
