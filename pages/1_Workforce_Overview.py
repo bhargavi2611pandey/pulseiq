@@ -1,3 +1,4 @@
+from db_utils import get_connection
 import streamlit as st
 import duckdb
 import pandas as pd
@@ -11,7 +12,7 @@ COLORS = ['#1E3A8A', '#10B981', '#9CA3AF']
 @st.cache_data
 def load_data():
     # Connect and build a secure dashboard view on top of the metric layer
-    con = duckdb.connect("pulseiq.duckdb") 
+    con = get_connection() 
     
     # Create an app-specific view that joins the governed metrics with dimension names
     con.execute("""

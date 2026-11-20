@@ -1,3 +1,4 @@
+from db_utils import get_connection
 import streamlit as st
 import duckdb
 import pandas as pd
@@ -8,7 +9,7 @@ st.set_page_config(page_title="AI Signals & Forecasts", layout="wide")
 
 @st.cache_data
 def load_ai_data():
-    con = duckdb.connect("pulseiq.duckdb")
+    con = get_connection()
     df_anomalies = con.execute("SELECT * FROM metrics.vw_anomalies_summary").df()
     df_forecast = con.execute("SELECT * FROM metrics.vw_forecast_accuracy ORDER BY month_key").df()
     con.close()

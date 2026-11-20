@@ -1,3 +1,4 @@
+from db_utils import get_connection
 import streamlit as st
 import duckdb
 import pandas as pd
@@ -31,7 +32,7 @@ st.markdown("""
 
 @st.cache_data
 def load_scorecard_data():
-    con = duckdb.connect("pulseiq.duckdb")
+    con = get_connection()
     df = con.execute("SELECT * FROM metrics.vw_executive_scorecard ORDER BY month_key").df()
     
     # We also grab anomalies from the AI table using the corrected column name

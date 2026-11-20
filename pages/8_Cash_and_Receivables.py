@@ -1,3 +1,4 @@
+from db_utils import get_connection
 import streamlit as st
 import duckdb
 import pandas as pd
@@ -7,7 +8,7 @@ st.set_page_config(page_title="Cash & Receivables", layout="wide")
 
 @st.cache_data
 def load_cash_data():
-    con = duckdb.connect("pulseiq.duckdb")
+    con = get_connection()
     df_ageing = con.execute("SELECT * FROM metrics.vw_receivables_ageing").df()
     df_days = con.execute("SELECT * FROM metrics.vw_client_days_to_pay").df()
     df_cash = con.execute("SELECT * FROM metrics.vw_cash_flow ORDER BY month_key").df()

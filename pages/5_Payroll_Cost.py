@@ -1,3 +1,4 @@
+from db_utils import get_connection
 import streamlit as st
 import duckdb
 import pandas as pd
@@ -13,7 +14,7 @@ COLORS = ['#3B82F6', '#10B981', '#6366F1', '#F59E0B']
 
 @st.cache_data
 def load_payroll_data():
-    con = duckdb.connect("pulseiq.duckdb")
+    con = get_connection()
     
     con.execute("""
         CREATE OR REPLACE VIEW metrics.vw_app_payroll AS

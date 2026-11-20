@@ -1,3 +1,4 @@
+from db_utils import get_connection
 import streamlit as st
 import duckdb
 import pandas as pd
@@ -7,7 +8,7 @@ st.set_page_config(page_title="Profit & Loss", layout="wide")
 
 @st.cache_data
 def load_financial_data():
-    con = duckdb.connect("pulseiq.duckdb")
+    con = get_connection()
     df_pl = con.execute("SELECT * FROM metrics.vw_pl_monthly ORDER BY month_key").df()
     df_cat = con.execute("SELECT * FROM metrics.vw_expense_by_category").df()
     df_ven = con.execute("SELECT * FROM metrics.vw_top_vendors").df()

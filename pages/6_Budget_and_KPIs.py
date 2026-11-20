@@ -1,3 +1,4 @@
+from db_utils import get_connection
 import streamlit as st
 import duckdb
 import pandas as pd
@@ -7,7 +8,7 @@ st.set_page_config(page_title="Budget vs Actual & KPIs", layout="wide")
 
 @st.cache_data
 def load_data():
-    con = duckdb.connect("pulseiq.duckdb")
+    con = get_connection()
     df_budget = con.execute("SELECT * FROM metrics.vw_budget_variance WHERE budget_cost IS NOT NULL").df()
     df_kpi = con.execute("SELECT * FROM metrics.vw_kpi_targets").df()
     con.close()

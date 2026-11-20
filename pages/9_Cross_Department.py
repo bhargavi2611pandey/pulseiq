@@ -1,3 +1,4 @@
+from db_utils import get_connection
 import streamlit as st
 import duckdb
 import pandas as pd
@@ -8,7 +9,7 @@ st.set_page_config(page_title="Cross-Department Impact", layout="wide")
 
 @st.cache_data
 def load_unified_data():
-    con = duckdb.connect("pulseiq.duckdb")
+    con = get_connection()
     df = con.execute("SELECT * FROM metrics.vw_department_unified").df()
     con.close()
     

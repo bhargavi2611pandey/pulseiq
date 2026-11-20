@@ -1,0 +1,36 @@
+name: Scheduled Production Data Refresh
+
+on:
+  schedule:
+    # Runs daily at 06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install DuckDB
+        run: pip install duckdb==2.0.0
+
+      - name: Rebuild Production Aggregate Database
+        run: python export_prod_db.py
+
+      - name: Commit and push refreshed database
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pulseiq_prod.duckdb
+          git diff --staged --quiet || git commit -m "chore: scheduled refresh of pulseiq_prod.duckdb"
+          git push

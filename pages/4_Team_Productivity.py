@@ -1,3 +1,4 @@
+from db_utils import get_connection
 import streamlit as st
 import duckdb
 import pandas as pd
@@ -12,7 +13,7 @@ CHART_CONFIG = {
 
 @st.cache_data
 def load_team_data():
-    con = duckdb.connect("pulseiq.duckdb")
+    con = get_connection()
     
     con.execute("""
         CREATE OR REPLACE VIEW metrics.vw_app_team_productivity AS

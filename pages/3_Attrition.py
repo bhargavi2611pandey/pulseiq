@@ -1,3 +1,4 @@
+from db_utils import get_connection
 import streamlit as st
 import duckdb
 import pandas as pd
@@ -14,7 +15,7 @@ CHART_CONFIG = {
 
 @st.cache_data
 def load_attrition_data():
-    con = duckdb.connect("pulseiq.duckdb")
+    con = get_connection()
     
     # Attach department names
     con.execute("""
