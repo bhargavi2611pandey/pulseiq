@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 data_cutoff, last_refreshed = get_data_metadata()
-api_base_url = os.environ.get("METRICS_API_URL", "http://127.0.0.1:8000")
+api_base_url = os.environ.get("METRICS_API_URL", "https://pulseiq-metrics-api-9dgr.onrender.com")
 
 st.title("🧬 Data Lineage, Freshness & Metrics API")
 
